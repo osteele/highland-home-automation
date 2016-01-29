@@ -1,0 +1,7 @@
+rooms:
+  - name: 'Mud Room'
+    motion: ['Mud Room']
+    hues: [7]
+  - name: 'Upstairs Hall'
+    motion: ['Upstairs Hall North', 'Upstairs Hall West']
+    hues: [5]
