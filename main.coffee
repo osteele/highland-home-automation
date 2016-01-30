@@ -7,23 +7,72 @@ hue = require './hue'
 
 config = yaml.load fs.readFileSync './config.yml'
 
-roomOn = (room) ->
+removeRoomTimers = (room) ->
+  lights = room.hues or []
+  hue.clientP
+  .then (client) -> client.getSchedules()
+  .then (schedules) ->
+    schedules.filter ({autodelete, localtime, command}) ->
+      return false unless autodelete
+      return false unless m = command?.address?.match /^\/api\/.+\/lights\/(\d+)\//
+      # TODO only remove added schedules
+      return m[1] in lights.map(String)
+  .then (schedules) ->
+    for schedule in schedules
+      console.info "deleting schedule ##{schedule.id}"
+      hue.clientP
+      .then (client) -> client.deleteSchedule schedule.id
+      .done()
+
+scheduleLightOff = (lightNumber, timeString) ->
+  console.info "schedule #{lightNumber} off at #{timeString}"
+  hue.scheduleEvent
+    # TODO use the light's name in the schedule name
+    name: "Switch off light ##{lightNumber}"
+    description: "creator=ha;light=#{lightNumber}"
+    localtime: timeString
+    command:
+      address: "/api/#{hue.username}/lights/#{lightNumber}/state"
+      method : 'PUT'
+      body:
+        on: false
+        'transition time': 1000
+  .then ({id}) -> console.info "created schedule ##{id}"
+  .fail console.error
+
+roomLightsOn = (room) ->
   lights = room.hues or []
   for lightNumber in lights
     console.info 'turning on hue #', lightNumber
-    state = Hue.lightState.create().bri(254).transitiontime(1000)
+    state = Hue.lightState.create().on().transitiontime(1000)
     hue.setLightState lightNumber, state
     .fail console.error
+
+scheduleRoomLightsOff = (room) ->
+  hue.getBridgeLocaltimeP().then (currentBridgeTime) ->
+    t0 = +currentBridgeTime
+    t1 = t0 + 10 * 60 * 1000
+    futureTimeString = (new Date t1).toISOString().replace(/\..*/, '')
+    lights = room.hues or []
+    for lightNumber in lights
+      console.info "scheduling hue ##{lightNumber} off"
+      scheduleLightOff lightNumber, futureTimeString
 
 handleMessage = (topic, payload) ->
   return if payload.isStateChange is false
 
-  rooms = (room for room in config.rooms when payload.deviceName in room.motion)
+  rooms = config.rooms.filter ({motion}) -> payload.deviceName in motion
   for room in rooms
-    console.info 'room', room.name, payload.event, payload.value
     switch "#{payload.event}:#{payload.value}"
       when 'motion:active'
-        roomOn room
+        removeRoomTimers room
+        .then -> roomLightsOn room
+        .done()
+      when 'motion:inactive'
+        # TODO remove only when *all* a room's sensors are inactive
+        removeRoomTimers room
+        .then -> scheduleRoomLightsOff room
+        .done()
 
 subscriber.handleMessage = (message, done) ->
   console.info 'message', message.topic
@@ -32,7 +81,9 @@ subscriber.handleMessage = (message, done) ->
   finally
     done()
 
-# TODO schedule the light to turn off again
+console.info "Starting at #{new Date}"
+
 # TODO choose color temperature according to time of day
 # TODO light adjacent rooms
 # TODO turn on SmartThings switches too
+# TODO real logging

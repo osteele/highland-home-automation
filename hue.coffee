@@ -16,15 +16,24 @@ createUser = ->
     hue = new HueApi()
     hue.registerUser(hostname, 'rpi').then(console.info)
 
-# TODO make this a command-line option, or move to a separate script
-# createUser(…).fail(console.error).done()
-
 clientP =
   hostnameP.then (hostname) ->
     assert username, 'username is null'
     assert hostname, 'hostname is null'
     new HueApi(hostname, username)
 
+exports.clientP = clientP
+exports.username = username
+
+exports.getBridgeLocaltimeP = ->
+  clientP
+  .then (client) -> client.config()
+  .then ({localtime}) -> new Date localtime
+
 exports.setLightState = (lightNumber, state) ->
   clientP.then (client) ->
     client.setLightState lightNumber, state
+
+exports.scheduleEvent = (lightNumber, event) ->
+  clientP.then (client) ->
+    client.scheduleEvent lightNumber, event
