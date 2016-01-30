@@ -9,7 +9,7 @@ username = process.env.HUE_USERNAME
 
 hostnameP =
   Hue.nupnpSearch()
-  .then ([bridge]) -> bridge.ipaddress
+  .then ([bridge]) -> bridge?.ipaddress
 
 createUser = ->
   hostnameP.then (hostname) ->

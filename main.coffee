@@ -2,7 +2,7 @@ assert = require 'assert'
 fs = require 'fs'
 yaml = require 'js-yaml'
 Hue = require 'node-hue-api'
-subscription = require './subscribe'
+subscriber = require './subscribe'
 hue = require './hue'
 
 config = yaml.load fs.readFileSync './config.yml'
@@ -15,9 +15,7 @@ roomOn = (room) ->
     hue.setLightState lightNumber, state
     .fail console.error
 
-subscription.on 'message', (topic, payload) ->
-  payload = JSON.parse payload.toString()
-  console.info 'message', topic
+handleMessage = (topic, payload) ->
   return if payload.isStateChange is false
 
   rooms = (room for room in config.rooms when payload.deviceName in room.motion)
@@ -26,6 +24,13 @@ subscription.on 'message', (topic, payload) ->
     switch "#{payload.event}:#{payload.value}"
       when 'motion:active'
         roomOn room
+
+subscriber.handleMessage = (message, done) ->
+  console.info 'message', message.topic
+  try
+    handleMessage message.topic, JSON.parse message.payload.toString()
+  finally
+    done()
 
 # TODO schedule the light to turn off again
 # TODO choose color temperature according to time of day

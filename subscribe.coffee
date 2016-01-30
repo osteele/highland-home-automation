@@ -3,7 +3,7 @@ url = require 'url'
 
 MQTT_URL = process.env.MQTT_URL
 
-MQTT_TOPIC = '/highland/device/+/event/#'
+MQTT_TOPIC = '/highland/device/#'
 
 client = do ->
   urlObj = url.parse MQTT_URL
@@ -22,5 +22,5 @@ client.on 'connect', ->
 module.exports = client
 
 if require.main is module
-  client.on 'message', (topic, message) ->
-    console.log topic, message.toString()
+  client.handleMessage = (message, cb) ->
+    console.log message.topic, message.payload.toString()
