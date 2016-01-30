@@ -16,8 +16,8 @@ client = do ->
   return mqtt.connect urlObj
 
 client.on 'connect', ->
-  console.info 'connected'
   client.subscribe MQTT_TOPIC
+  console.info 'subscribed to', MQTT_TOPIC
 
 module.exports = client
 
