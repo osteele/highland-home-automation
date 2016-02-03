@@ -15,7 +15,7 @@
   "dependencies": {
     "coffee-script": "^1.10.0",
     "js-yaml": "^3.5.2",
-    "mqtt": "^1.6.3",
+    "mqtt": "^1.7.0",
     "node-hue-api": "^2.0.1"
   },
   "engine": "node 5.x.x"
