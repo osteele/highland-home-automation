@@ -19,6 +19,18 @@ client.on 'connect', ->
   client.subscribe MQTT_TOPIC
   console.info 'subscribed to', MQTT_TOPIC
 
+client.on 'reconnect', ->
+   console.log 'MQTT client reconnect'
+
+client.on 'close', ->
+   console.log 'MQTT client close'
+
+client.on 'offline', ->
+   console.log 'MQTT client offline'
+
+client.on 'error', (err) ->
+   console.error 'MQTT client error:', err
+
 module.exports = client
 
 if require.main is module
