@@ -5,7 +5,7 @@
   "main": "main.coffee",
   "repository": {
     "type": "git",
-    "url": "git@github.com:osteele/highland-pi.git"
+    "url": "git@github.com:osteele/highland-hub.git"
   },
   "scripts": {
     "start": "coffee main.coffee"
