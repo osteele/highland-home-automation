@@ -33,16 +33,15 @@ scheduleLightOff = (lightNumber, timeString) ->
     localtime: timeString
     state:
       on: false
-      'transition time': 1000
-  .then (id) -> console.info "created schedule ##{id} light ##{lightNumber} off at #{timeString}"
+      'transition time': 300 # 30 s
+  .then (id) -> console.info "created schedule ##{id}: light ##{lightNumber} off at #{timeString}"
   .fail console.error
 
 roomLightsOn = (room) ->
   lights = room.hues or []
   for lightNumber in lights
     console.info "turning on hue ##{lightNumber}"
-    state = Hue.lightState.create().on().bri(254).transitiontime(1000)
-    hue.setLightState lightNumber, state
+    hue.setLightState lightNumber, on: true, bri: 254, transitiontime: 5 # 0.5 s
     .fail console.error
 
 scheduleRoomLightsOff = (room) ->
