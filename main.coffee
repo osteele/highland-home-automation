@@ -25,7 +25,7 @@ removeRoomTimers = (room) ->
       .done()
 
 scheduleLightOff = (lightNumber, timeString) ->
-  console.info "schedule #{lightNumber} off at #{timeString}"
+  # console.info "schedule #{lightNumber} off at #{timeString}"
   hue.scheduleEvent
     # TODO use the light's name in the schedule name
     name: "Switch off light ##{lightNumber}"
@@ -37,14 +37,14 @@ scheduleLightOff = (lightNumber, timeString) ->
       body:
         on: false
         'transition time': 1000
-  .then ({id}) -> console.info "created schedule ##{id}"
+  .then ({id}) -> console.info "created schedule ##{id} light ##{lightNumber} off at ##{timeString}"
   .fail console.error
 
 roomLightsOn = (room) ->
   lights = room.hues or []
   for lightNumber in lights
-    console.info 'turning on hue #', lightNumber
-    state = Hue.lightState.create().on().transitiontime(1000)
+    console.info "turning on hue ##{lightNumber}"
+    state = Hue.lightState.create().on().bri(254).transitiontime(1000)
     hue.setLightState lightNumber, state
     .fail console.error
 
