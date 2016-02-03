@@ -26,18 +26,15 @@ removeRoomTimers = (room) ->
 
 scheduleLightOff = (lightNumber, timeString) ->
   # console.info "schedule #{lightNumber} off at #{timeString}"
-  hue.scheduleEvent
+  hue.scheduleLightEvent lightNumber,
     # TODO use the light's name in the schedule name
     name: "Switch off light ##{lightNumber}"
     description: "creator=ha;light=#{lightNumber}"
     localtime: timeString
-    command:
-      address: "/api/#{hue.username}/lights/#{lightNumber}/state"
-      method : 'PUT'
-      body:
-        on: false
-        'transition time': 1000
-  .then ({id}) -> console.info "created schedule ##{id} light ##{lightNumber} off at ##{timeString}"
+    state:
+      on: false
+      'transition time': 1000
+  .then (id) -> console.info "created schedule ##{id} light ##{lightNumber} off at #{timeString}"
   .fail console.error
 
 roomLightsOn = (room) ->
@@ -55,7 +52,7 @@ scheduleRoomLightsOff = (room) ->
     futureTimeString = (new Date t1).toISOString().replace(/\..*/, '')
     lights = room.hues or []
     for lightNumber in lights
-      console.info "scheduling hue ##{lightNumber} off"
+      # console.info "scheduling hue ##{lightNumber} off"
       scheduleLightOff lightNumber, futureTimeString
 
 handleMessage = (topic, payload) ->

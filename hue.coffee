@@ -37,3 +37,14 @@ exports.setLightState = (lightNumber, state) ->
 exports.scheduleEvent = (lightNumber, event) ->
   clientP.then (client) ->
     client.scheduleEvent lightNumber, event
+
+exports.scheduleLightEvent = (lightNumber, event) ->
+  exports.scheduleEvent
+    name: event.name
+    description: event.description
+    localtime: event.localtime
+    command:
+      address: "/api/#{username}/lights/#{lightNumber}/state"
+      method: 'PUT'
+      body: event.state
+  .then ({id}) -> id
